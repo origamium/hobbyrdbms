@@ -10,7 +10,7 @@ pub struct DiskManager {
 
 pub struct PageId(u64);
 
-const PAGE_SIZE: u64 = 0; // TODO
+pub const PAGE_SIZE: usize = 4096;
 
 impl DiskManager {
     pub fn new(heap_file: File) -> io::Result<Self> {
