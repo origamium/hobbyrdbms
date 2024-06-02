@@ -8,6 +8,8 @@ pub struct DiskManager {
     next_page_id: u64,
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[repr(C)]
 pub struct PageId(u64);
 
 pub const PAGE_SIZE: usize = 4096;

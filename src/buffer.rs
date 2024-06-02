@@ -6,6 +6,7 @@ use crate::disk::{DiskManager, PAGE_SIZE, PageId};
 
 pub type Page = [u8; PAGE_SIZE];
 
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct BufferId(usize);
 
 pub struct Buffer {
@@ -66,24 +67,24 @@ impl BufferPool {
 }
 
 impl BufferPoolManager {
-    fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
+    pub fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
         if let Some(&buffer_id) = self.page_table.get(&page_id) {
             let frame = &mut self.pool[buffer_id];
             frame.usage_count += 1;
-            return Ok(frame.buffer.clone());
+            return Ok(Rc::clone(&frame.buffer));
         }
-
         let buffer_id = self.pool.evict().ok_or(Error::NoFreeBuffer)?;
         let frame = &mut self.pool[buffer_id];
         let evict_page_id = frame.buffer.page_id;
         {
             let buffer = Rc::get_mut(&mut frame.buffer).unwrap();
             if buffer.is_dirty.get() {
-                self.disk.write_page_data(evict_page_id.buffer.page.get_mut())?;
+                self.disk
+                    .write_page_data(evict_page_id, buffer.page.get_mut())?;
             }
             buffer.page_id = page_id;
             buffer.is_dirty.set(false);
-            self.disk.read_page_data(page_id, buffer.page.get_mut())?; //moveされとるやんけ
+            self.disk.read_page_data(page_id, buffer.page.get_mut())?;
             frame.usage_count = 1;
         }
         let page = Rc::clone(&frame.buffer);
