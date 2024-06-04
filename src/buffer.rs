@@ -1,8 +1,9 @@
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
-use std::fmt::Error;
+use std::io;
 use std::rc::Rc;
 use crate::disk::{DiskManager, PAGE_SIZE, PageId};
+use std::ops::{Index, IndexMut};
 
 pub type Page = [u8; PAGE_SIZE];
 
@@ -29,6 +30,28 @@ pub struct BufferPoolManager {
     disk: DiskManager,
     pool: BufferPool,
     page_table: HashMap<PageId, BufferId>,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Io(#[from] io::Error),
+    #[error("no free buffer available in buffer pool")]
+    NoFreeBuffer,
+}
+
+impl Index<BufferId> for BufferPool {
+    type Output = Frame;
+
+    fn index(&self, index: BufferId) -> &Self::Output {
+        &self.buffers[index.0]
+    }
+}
+
+impl IndexMut<BufferId> for BufferPool {
+    fn index_mut(&mut self, index: BufferId) -> &mut Self::Output {
+        &mut self.buffers[index.0]
+    }
 }
 
 impl BufferPool {
