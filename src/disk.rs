@@ -2,13 +2,14 @@ use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
+use zerocopy::{AsBytes, FromBytes};
 
 pub struct DiskManager {
     heap_file: File,
     next_page_id: u64,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromBytes, AsBytes)]
 #[repr(C)]
 pub struct PageId(u64);
 
