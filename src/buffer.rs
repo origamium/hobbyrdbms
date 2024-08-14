@@ -67,6 +67,16 @@ impl IndexMut<BufferId> for BufferPool {
 }
 
 impl BufferPool {
+    pub fn new(pool_size: usize) -> Self {
+        let mut buffers = vec![];
+        buffers.resize_with(pool_size, Default::default);
+        let next_victim_id = BufferId::default();
+        Self {
+            buffers,
+            next_victim_id,
+        }
+    }
+
     fn size(&self) -> usize {
         self.buffers.len()
     }
@@ -102,6 +112,15 @@ impl BufferPool {
 }
 
 impl BufferPoolManager {
+    pub fn new(disk: DiskManager, pool: BufferPool) -> Self {
+        let page_table = HashMap::new();
+        Self {
+            disk,
+            pool,
+            page_table,
+        }
+    }
+
     pub fn fetch_page(&mut self, page_id: PageId) -> Result<Rc<Buffer>, Error> {
         // バッファプールに該当ページがあればそれを返す
         if let Some(&buffer_id) = self.page_table.get(&page_id) {
