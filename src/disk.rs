@@ -13,6 +13,20 @@ pub struct DiskManager {
 #[repr(C)]
 pub struct PageId(u64);
 
+impl PageId {
+    pub const INVALID_PAGE_ID: PageId = PageId(u64::MAX);
+
+    pub fn valid(self) -> Option<PageId> {
+        if self == Self::INVALID_PAGE_ID {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    pub fn to_u64(self) -> u64 {self.0}
+}
+
 pub const PAGE_SIZE: usize = 4096;
 
 impl DiskManager {
@@ -46,10 +60,14 @@ impl DiskManager {
         self.heap_file.read_exact(data)
     }
 
-    pub fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> io::Result<Self> {
+    pub fn write_page_data(&mut self, page_id: PageId, data: &[u8]) -> io::Result<()> {
         let offset = PAGE_SIZE as u64 * page_id.to_u64();
         self.heap_file.seek(SeekFrom::Start(offset))?;
         self.heap_file.write_all(data)
     }
 
+    pub fn sync(&mut self) -> io::Result<()> {
+        self.heap_file.flush()?;
+        self.heap_file.sync_all()
+    }
 }
