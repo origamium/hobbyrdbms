@@ -4,7 +4,7 @@ use crate::disk::PageId;
 #[derive(Debug, FromBytes, AsBytes)]
 #[repr(C)]
 pub struct Header {
-    pub root_page_id: PageId;
+    pub root_page_id: PageId,
 }
 
 pub struct Meta<B> {
