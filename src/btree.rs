@@ -77,7 +77,7 @@ impl BTree {
     fn fetch_root_page(&self, bufmgr: &mut BufferPoolManager) -> Result<Rc<Buffer>, Error> {
         let root_page_id = {
             let meta_buffer = bufmgr.fetch_page(self.meta_page_id)?;
-            let meta = meta::Meta::new(meta_buffer.page.borrow() as Ref<[_>);
+            let meta = meta::Meta::new(meta_buffer.page.borrow() as Ref<[_]>);
             meta.header.root_page_id
         };
         Ok(bufmgr.fetch_page(root_page_id)?)
